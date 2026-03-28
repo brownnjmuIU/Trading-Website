@@ -1,0 +1,42 @@
+# Render Blueprint: deploy as two separate Web Services from this repo.
+# 1. Create a Render PostgreSQL instance (or use an external Postgres URL).
+# 2. For each service, set DATABASE_URL (and optionally DATABASE_URL_GAMIFIED / DATABASE_URL_TRADITIONAL)
+#    to the same connection string if you use one database with platform_type, or use two DBs.
+# 3. Set SECRET_KEY to a long random string for each service.
+
+services:
+  - type: web
+    name: tradeflex-gamified
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 gamified_app_db:app
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_URL_GAMIFIED
+        sync: false
+      - key: RENDER
+        value: "true"
+
+  - type: web
+    name: tradestation-traditional
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 traditional_app_db:app
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_URL_TRADITIONAL
+        sync: false
+      - key: RENDER
+        value: "true"
