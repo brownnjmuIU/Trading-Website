@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeStation Pro — Simulated brokerage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="{{ url_for('static', filename='traditional_style.css') }}">
+</head>
+<body>
+    <header class="ts-header">
+        <div class="ts-header-inner">
+            <div class="ts-brand">
+                <span class="ts-logo"><i class="fa-solid fa-building-columns" aria-hidden="true"></i></span>
+                <div>
+                    <span class="ts-title">TradeStation Pro</span>
+                    <span class="ts-sub">Simulated · Paper trading</span>
+                </div>
+            </div>
+            <nav class="ts-nav">
+                <span class="ts-account"><i class="fa-regular fa-user" aria-hidden="true"></i> Session ····{{ session_suffix }}</span>
+                <span class="ts-divider">|</span>
+                <a href="#" class="ts-link">Settings</a>
+                <a href="#" class="ts-link">Help</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="indices-strip">
+        <div class="indices-inner">
+            {% for idx in market_indices %}
+            <div class="idx-item">
+                <span class="idx-name">{{ idx.name }}</span>
+                <span class="idx-val">{{ idx.value }}</span>
+                <span class="idx-chg {% if idx.up %}up{% else %}down{% endif %}">
+                    <i class="fa-solid {% if idx.up %}fa-caret-up{% else %}fa-caret-down{% endif %}" aria-hidden="true"></i>
+                    {{ idx.chg_pct }}%
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <main class="ts-main">
+        <section class="summary-card">
+            <div class="summary-head">
+                <h2 class="summary-title">Account overview</h2>
+                <div class="summary-meta">
+                    <span class="meta-pill"><i class="fa-solid fa-users" aria-hidden="true"></i> Rank #{{ account_summary.participant_rank }} of {{ "{:,}".format(account_summary.total_participants) }}</span>
+                    <span class="meta-pill"><i class="fa-solid fa-list-check" aria-hidden="true"></i> {{ account_summary.trade_count }} order{{ 's' if account_summary.trade_count != 1 else '' }}</span>
+                </div>
+            </div>
+            <div class="summary-grid">
+                <div class="sum-item highlight">
+                    <span class="sum-label">Net account value</span>
+                    <span class="sum-value">${{ "{:,.2f}".format(account_summary.total_value) }}</span>
+                </div>
+                <div class="sum-item">
+                    <span class="sum-label">Cash</span>
+                    <span class="sum-value">${{ "{:,.2f}".format(account_summary.cash_balance) }}</span>
+                </div>
+                <div class="sum-item">
+                    <span class="sum-label">Buying power</span>
+                    <span class="sum-value">${{ "{:,.2f}".format(account_summary.buying_power) }}</span>
+                </div>
+                <div class="sum-item">
+                    <span class="sum-label">Day P/L ($)</span>
+                    <span class="sum-value {% if account_summary.today_change >= 0 %}pos{% else %}neg{% endif %}">
+                        {% if account_summary.today_change >= 0 %}+{% endif %}${{ "{:,.2f}".format(account_summary.today_change) }}
+                    </span>
+                </div>
+                <div class="sum-item">
+                    <span class="sum-label">Day P/L (%)</span>
+                    <span class="sum-value {% if account_summary.today_change_percent >= 0 %}pos{% else %}neg{% endif %}">
+                        {% if account_summary.today_change_percent >= 0 %}+{% endif %}{{ "%.2f"|format(account_summary.today_change_percent) }}%
+                    </span>
+                </div>
+            </div>
+            <div class="perf-bar" title="Performance vs $100K starting balance">
+                <div class="perf-fill {% if account_summary.today_change_percent >= 0 %}positive{% else %}negative{% endif %}" style="width: {{ account_summary.perf_bar_width }}%"></div>
+            </div>
+            <p class="perf-hint">Performance bar is a visual cue — not investment advice.</p>
+        </section>
+
+        <div class="ts-grid">
+            <div class="ts-left">
+                <div class="card">
+                    <div class="tabs">
+                        <button type="button" class="tab active" onclick="showTab('positions', this)">Positions</button>
+                        <button type="button" class="tab" onclick="showTab('orders', this)">Orders</button>
+                        <button type="button" class="tab" onclick="showTab('history', this)">History</button>
+                    </div>
+
+                    <div id="positions" class="tab-pane active">
+                        {% if positions %}
+                        <div class="table-scroll">
+                            <table class="ts-table">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th class="text-right">Qty</th>
+                                        <th class="text-right">Avg</th>
+                                        <th class="text-right">Last</th>
+                                        <th class="text-right">Mkt value</th>
+                                        <th class="text-right">P/L</th>
+                                        <th class="text-right">P/L %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for pos in positions %}
+                                    <tr>
+                                        <td class="sym">{{ pos.symbol }}</td>
+                                        <td class="text-right">{{ pos.shares }}</td>
+                                        <td class="text-right">${{ "%.2f"|format(pos.avg_cost) }}</td>
+                                        <td class="text-right">${{ "%.2f"|format(pos.current_price) }}</td>
+                                        <td class="text-right fw">${{ "{:,.2f}".format(pos.market_value) }}</td>
+                                        <td class="text-right fw {% if pos.gain_loss >= 0 %}pos{% else %}neg{% endif %}">{% if pos.gain_loss >= 0 %}+{% endif %}${{ "{:,.2f}".format(pos.gain_loss) }}</td>
+                                        <td class="text-right fw {% if pos.gain_loss_percent >= 0 %}pos{% else %}neg{% endif %}">{% if pos.gain_loss_percent >= 0 %}+{% endif %}{{ "%.2f"|format(pos.gain_loss_percent) }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="empty">No positions — add a trade from the order ticket.</div>
+                        {% endif %}
+                    </div>
+
+                    <div id="orders" class="tab-pane">
+                        <div class="empty"><i class="fa-regular fa-clipboard" aria-hidden="true"></i><p>No working orders (simulation uses market fills only).</p></div>
+                    </div>
+
+                    <div id="history" class="tab-pane">
+                        {% if history %}
+                        <div class="table-scroll">
+                            <table class="ts-table">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Side</th>
+                                        <th class="text-right">Qty</th>
+                                        <th class="text-right">Price</th>
+                                        <th class="text-right">Total</th>
+                                        <th class="text-right">Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for trade in history %}
+                                    <tr>
+                                        <td class="sym">{{ trade.symbol }}</td>
+                                        <td class="{% if trade.side == 'BUY' %}pos{% else %}neg{% endif %}">{{ trade.side }}</td>
+                                        <td class="text-right">{{ trade.shares }}</td>
+                                        <td class="text-right">${{ "%.2f"|format(trade.price) }}</td>
+                                        <td class="text-right">${{ "{:,.2f}".format(trade.total) }}</td>
+                                        <td class="text-right small muted">{{ trade.timestamp }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="empty">No executions yet.</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Market data</h3>
+                    <div class="table-scroll tall">
+                        <table class="ts-table">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Name</th>
+                                    <th class="text-right">Bid</th>
+                                    <th class="text-right">Ask</th>
+                                    <th class="text-right">Last</th>
+                                    <th class="text-right">Change</th>
+                                    <th class="text-right">Vol</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stock in market_data %}
+                                <tr class="clickable" data-symbol="{{ stock.symbol }}" data-price="{{ stock.last }}" onclick="selectFromRow(this)">
+                                    <td class="sym">{{ stock.symbol }}</td>
+                                    <td class="co">{{ stock.name }}</td>
+                                    <td class="text-right">{{ "%.2f"|format(stock.bid) }}</td>
+                                    <td class="text-right">{{ "%.2f"|format(stock.ask) }}</td>
+                                    <td class="text-right fw">{{ "%.2f"|format(stock.last) }}</td>
+                                    <td class="text-right fw {% if stock.change >= 0 %}pos{% else %}neg{% endif %}">{% if stock.change >= 0 %}+{% endif %}{{ "%.2f"|format(stock.change) }} ({% if stock.change_percent >= 0 %}+{% endif %}{{ "%.2f"|format(stock.change_percent) }}%)</td>
+                                    <td class="text-right muted">{{ stock.volume }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title"><i class="fa-solid fa-trophy" aria-hidden="true"></i> Cohort leaderboard (simulated)</h3>
+                    <p class="card-lead">Ranked by total equity. Names are masked for privacy.</p>
+                    <div class="lb-mini">
+                        {% for row in leaderboard %}
+                        <div class="lb-mini-row {% if row.is_you %}me{% endif %}">
+                            <span class="lb-r">#{{ row.rank }}</span>
+                            <span class="lb-n">{{ row.name }}{% if row.is_you %} <span class="you">You</span>{% endif %}</span>
+                            <span class="lb-p {% if row.returns >= 0 %}pos{% else %}neg{% endif %}">{% if row.returns >= 0 %}+{% endif %}{{ "%.2f"|format(row.returns) }}%</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <aside class="ts-right">
+                <div class="card order-card">
+                    <h3 class="card-title"><i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i> Order ticket</h3>
+                    <div class="form-group">
+                        <label class="form-label">Side</label>
+                        <div class="action-buttons">
+                            <button type="button" id="buyBtn" class="action-btn active" onclick="setAction('buy')">Buy</button>
+                            <button type="button" id="sellBtn" class="action-btn" onclick="setAction('sell')">Sell</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Instrument</label>
+                        <div id="selectedStockDisplay" class="selected-stock-display">Select a symbol from Market data</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="quantityInput">Quantity</label>
+                        <input type="number" id="quantityInput" class="form-input" placeholder="0" min="1" oninput="updateEstimate()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Order type</label>
+                        <select class="form-select">
+                            <option value="market">Market</option>
+                            <option value="limit">Limit</option>
+                            <option value="stop">Stop</option>
+                            <option value="stop-limit">Stop limit</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Time in force</label>
+                        <select class="form-select">
+                            <option value="day">Day</option>
+                            <option value="gtc">GTC</option>
+                            <option value="ioc">IOC</option>
+                            <option value="fok">FOK</option>
+                        </select>
+                    </div>
+                    <div class="order-summary">
+                        <div class="summary-row">
+                            <span>Est. cost</span>
+                            <span id="estimatedCost" class="fw">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Commission</span>
+                            <span class="fw">$0.00</span>
+                        </div>
+                    </div>
+                    <button type="button" class="submit-button" onclick="submitOrder()">Submit order</button>
+                    <p class="disclaimer">Simulated execution. Market data and indices are illustrative. For research participation only.</p>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <script>
+        let selectedStock = null;
+        let currentAction = 'buy';
+        let currentPrice = 0;
+
+        function showTab(tabName, el) {
+            document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(b => { b.classList.remove('active'); });
+            document.getElementById(tabName).classList.add('active');
+            if (el) el.classList.add('active');
+        }
+
+        function selectFromRow(row) {
+            selectedStock = row.dataset.symbol;
+            currentPrice = parseFloat(row.dataset.price, 10);
+            if (!selectedStock) return;
+            document.getElementById('selectedStockDisplay').innerHTML = '<strong>' + selectedStock + '</strong> at $' + currentPrice.toFixed(2);
+            document.getElementById('selectedStockDisplay').classList.add('has-selection');
+            updateEstimate();
+        }
+
+        function setAction(action) {
+            currentAction = action;
+            document.getElementById('buyBtn').classList.toggle('active', action === 'buy');
+            document.getElementById('sellBtn').classList.toggle('active', action === 'sell');
+        }
+
+        function updateEstimate() {
+            const q = parseInt(document.getElementById('quantityInput').value, 10) || 0;
+            const total = q * currentPrice;
+            document.getElementById('estimatedCost').textContent = '$' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        async function submitOrder() {
+            if (!selectedStock) {
+                alert('Select a symbol from Market data.');
+                return;
+            }
+            const quantity = parseInt(document.getElementById('quantityInput').value, 10);
+            if (!quantity || quantity <= 0) {
+                alert('Enter a valid quantity.');
+                return;
+            }
+            try {
+                const response = await fetch('/trade', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol: selectedStock, shares: quantity, action: currentAction })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
