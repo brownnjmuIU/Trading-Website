@@ -1,0 +1,602 @@
+[
+  {
+    "symbol": "AAPL",
+    "name": "Apple Inc.",
+    "base": 325.12,
+    "vol": "low"
+  },
+  {
+    "symbol": "MSFT",
+    "name": "Microsoft Corporation",
+    "base": 374.65,
+    "vol": "low"
+  },
+  {
+    "symbol": "GOOGL",
+    "name": "Alphabet Inc.",
+    "base": 123.26,
+    "vol": "high"
+  },
+  {
+    "symbol": "AMZN",
+    "name": "Amazon.com Inc.",
+    "base": 64.71,
+    "vol": "high"
+  },
+  {
+    "symbol": "META",
+    "name": "Meta Platforms Inc.",
+    "base": 447.71,
+    "vol": "low"
+  },
+  {
+    "symbol": "TSLA",
+    "name": "Tesla Inc.",
+    "base": 301.39,
+    "vol": "low"
+  },
+  {
+    "symbol": "NVDA",
+    "name": "NVIDIA Corporation",
+    "base": 29.45,
+    "vol": "low"
+  },
+  {
+    "symbol": "BRK-B",
+    "name": "Berkshire Hathaway B",
+    "base": 127.84,
+    "vol": "high"
+  },
+  {
+    "symbol": "UNH",
+    "name": "UnitedHealth Group",
+    "base": 27.87,
+    "vol": "low"
+  },
+  {
+    "symbol": "JNJ",
+    "name": "Johnson & Johnson",
+    "base": 362.27,
+    "vol": "high"
+  },
+  {
+    "symbol": "XOM",
+    "name": "Exxon Mobil Corporation",
+    "base": 279.3,
+    "vol": "low"
+  },
+  {
+    "symbol": "JPM",
+    "name": "JPMorgan Chase & Co.",
+    "base": 232.87,
+    "vol": "medium"
+  },
+  {
+    "symbol": "V",
+    "name": "Visa Inc.",
+    "base": 407.57,
+    "vol": "low"
+  },
+  {
+    "symbol": "PG",
+    "name": "Procter & Gamble Co.",
+    "base": 383.02,
+    "vol": "low"
+  },
+  {
+    "symbol": "MA",
+    "name": "Mastercard Inc.",
+    "base": 353.6,
+    "vol": "medium"
+  },
+  {
+    "symbol": "HD",
+    "name": "Home Depot Inc.",
+    "base": 149.77,
+    "vol": "low"
+  },
+  {
+    "symbol": "CVX",
+    "name": "Chevron Corporation",
+    "base": 479.25,
+    "vol": "medium"
+  },
+  {
+    "symbol": "MRK",
+    "name": "Merck & Co.",
+    "base": 64.57,
+    "vol": "medium"
+  },
+  {
+    "symbol": "LLY",
+    "name": "Eli Lilly and Company",
+    "base": 61.91,
+    "vol": "medium"
+  },
+  {
+    "symbol": "PEP",
+    "name": "PepsiCo Inc.",
+    "base": 307.81,
+    "vol": "low"
+  },
+  {
+    "symbol": "ABBV",
+    "name": "AbbVie Inc.",
+    "base": 368.92,
+    "vol": "high"
+  },
+  {
+    "symbol": "KO",
+    "name": "Coca-Cola Company",
+    "base": 75.54,
+    "vol": "medium"
+  },
+  {
+    "symbol": "COST",
+    "name": "Costco Wholesale Corp.",
+    "base": 53.22,
+    "vol": "medium"
+  },
+  {
+    "symbol": "AVGO",
+    "name": "Broadcom Inc.",
+    "base": 417.26,
+    "vol": "high"
+  },
+  {
+    "symbol": "MCD",
+    "name": "McDonald's Corporation",
+    "base": 444.44,
+    "vol": "medium"
+  },
+  {
+    "symbol": "WMT",
+    "name": "Walmart Inc.",
+    "base": 295.02,
+    "vol": "high"
+  },
+  {
+    "symbol": "TMO",
+    "name": "Thermo Fisher Scientific",
+    "base": 48.73,
+    "vol": "high"
+  },
+  {
+    "symbol": "CSCO",
+    "name": "Cisco Systems Inc.",
+    "base": 125.53,
+    "vol": "medium"
+  },
+  {
+    "symbol": "ACN",
+    "name": "Accenture plc",
+    "base": 492.83,
+    "vol": "low"
+  },
+  {
+    "symbol": "DHR",
+    "name": "Danaher Corporation",
+    "base": 435.24,
+    "vol": "medium"
+  },
+  {
+    "symbol": "VZ",
+    "name": "Verizon Communications",
+    "base": 149.82,
+    "vol": "high"
+  },
+  {
+    "symbol": "ADBE",
+    "name": "Adobe Inc.",
+    "base": 419.54,
+    "vol": "low"
+  },
+  {
+    "symbol": "CRM",
+    "name": "Salesforce Inc.",
+    "base": 194.54,
+    "vol": "low"
+  },
+  {
+    "symbol": "NFLX",
+    "name": "Netflix Inc.",
+    "base": 340.03,
+    "vol": "high"
+  },
+  {
+    "symbol": "AMD",
+    "name": "Advanced Micro Devices",
+    "base": 469.28,
+    "vol": "high"
+  },
+  {
+    "symbol": "INTC",
+    "name": "Intel Corporation",
+    "base": 49.63,
+    "vol": "high"
+  },
+  {
+    "symbol": "QCOM",
+    "name": "Qualcomm Inc.",
+    "base": 98.0,
+    "vol": "high"
+  },
+  {
+    "symbol": "TXN",
+    "name": "Texas Instruments",
+    "base": 133.73,
+    "vol": "medium"
+  },
+  {
+    "symbol": "NEE",
+    "name": "NextEra Energy",
+    "base": 199.04,
+    "vol": "high"
+  },
+  {
+    "symbol": "UPS",
+    "name": "United Parcel Service",
+    "base": 348.76,
+    "vol": "low"
+  },
+  {
+    "symbol": "HON",
+    "name": "Honeywell International",
+    "base": 347.04,
+    "vol": "low"
+  },
+  {
+    "symbol": "PM",
+    "name": "Philip Morris International",
+    "base": 126.09,
+    "vol": "low"
+  },
+  {
+    "symbol": "LOW",
+    "name": "Lowe's Companies",
+    "base": 405.45,
+    "vol": "medium"
+  },
+  {
+    "symbol": "IBM",
+    "name": "International Business Machines",
+    "base": 144.85,
+    "vol": "low"
+  },
+  {
+    "symbol": "ORCL",
+    "name": "Oracle Corporation",
+    "base": 457.87,
+    "vol": "high"
+  },
+  {
+    "symbol": "RTX",
+    "name": "RTX Corporation",
+    "base": 440.04,
+    "vol": "medium"
+  },
+  {
+    "symbol": "UNP",
+    "name": "Union Pacific Corporation",
+    "base": 118.12,
+    "vol": "medium"
+  },
+  {
+    "symbol": "SPGI",
+    "name": "S&P Global Inc.",
+    "base": 206.88,
+    "vol": "high"
+  },
+  {
+    "symbol": "BA",
+    "name": "Boeing Company",
+    "base": 237.54,
+    "vol": "medium"
+  },
+  {
+    "symbol": "CAT",
+    "name": "Caterpillar Inc.",
+    "base": 82.72,
+    "vol": "high"
+  },
+  {
+    "symbol": "GS",
+    "name": "Goldman Sachs Group",
+    "base": 287.26,
+    "vol": "medium"
+  },
+  {
+    "symbol": "MS",
+    "name": "Morgan Stanley",
+    "base": 377.3,
+    "vol": "medium"
+  },
+  {
+    "symbol": "BLK",
+    "name": "BlackRock Inc.",
+    "base": 450.44,
+    "vol": "medium"
+  },
+  {
+    "symbol": "BKNG",
+    "name": "Booking Holdings",
+    "base": 190.57,
+    "vol": "low"
+  },
+  {
+    "symbol": "SBUX",
+    "name": "Starbucks Corporation",
+    "base": 262.12,
+    "vol": "low"
+  },
+  {
+    "symbol": "DE",
+    "name": "Deere & Company",
+    "base": 381.55,
+    "vol": "low"
+  },
+  {
+    "symbol": "MDT",
+    "name": "Medtronic plc",
+    "base": 89.13,
+    "vol": "low"
+  },
+  {
+    "symbol": "TJX",
+    "name": "TJX Companies Inc.",
+    "base": 399.16,
+    "vol": "medium"
+  },
+  {
+    "symbol": "GILD",
+    "name": "Gilead Sciences",
+    "base": 304.26,
+    "vol": "medium"
+  },
+  {
+    "symbol": "ISRG",
+    "name": "Intuitive Surgical",
+    "base": 200.09,
+    "vol": "medium"
+  },
+  {
+    "symbol": "AMAT",
+    "name": "Applied Materials",
+    "base": 271.62,
+    "vol": "high"
+  },
+  {
+    "symbol": "ADI",
+    "name": "Analog Devices",
+    "base": 432.48,
+    "vol": "low"
+  },
+  {
+    "symbol": "INTU",
+    "name": "Intuit Inc.",
+    "base": 344.94,
+    "vol": "low"
+  },
+  {
+    "symbol": "SYK",
+    "name": "Stryker Corporation",
+    "base": 345.63,
+    "vol": "high"
+  },
+  {
+    "symbol": "ADP",
+    "name": "Automatic Data Processing",
+    "base": 379.18,
+    "vol": "high"
+  },
+  {
+    "symbol": "LRCX",
+    "name": "Lam Research",
+    "base": 179.99,
+    "vol": "medium"
+  },
+  {
+    "symbol": "COP",
+    "name": "ConocoPhillips",
+    "base": 225.86,
+    "vol": "medium"
+  },
+  {
+    "symbol": "REGN",
+    "name": "Regeneron Pharmaceuticals",
+    "base": 16.57,
+    "vol": "high"
+  },
+  {
+    "symbol": "EQIX",
+    "name": "Equinix Inc.",
+    "base": 439.79,
+    "vol": "medium"
+  },
+  {
+    "symbol": "ZTS",
+    "name": "Zoetis Inc.",
+    "base": 486.37,
+    "vol": "low"
+  },
+  {
+    "symbol": "CL",
+    "name": "Colgate-Palmolive",
+    "base": 261.23,
+    "vol": "low"
+  },
+  {
+    "symbol": "SHW",
+    "name": "Sherwin-Williams",
+    "base": 437.2,
+    "vol": "medium"
+  },
+  {
+    "symbol": "SO",
+    "name": "Southern Company",
+    "base": 423.21,
+    "vol": "high"
+  },
+  {
+    "symbol": "DUK",
+    "name": "Duke Energy",
+    "base": 310.35,
+    "vol": "low"
+  },
+  {
+    "symbol": "BDX",
+    "name": "Becton Dickinson",
+    "base": 196.35,
+    "vol": "low"
+  },
+  {
+    "symbol": "PGR",
+    "name": "Progressive Corporation",
+    "base": 276.6,
+    "vol": "high"
+  },
+  {
+    "symbol": "MMC",
+    "name": "Marsh & McLennan",
+    "base": 460.47,
+    "vol": "high"
+  },
+  {
+    "symbol": "CI",
+    "name": "Cigna Corporation",
+    "base": 172.22,
+    "vol": "low"
+  },
+  {
+    "symbol": "EOG",
+    "name": "EOG Resources",
+    "base": 69.26,
+    "vol": "medium"
+  },
+  {
+    "symbol": "NOC",
+    "name": "Northrop Grumman",
+    "base": 441.18,
+    "vol": "medium"
+  },
+  {
+    "symbol": "ITW",
+    "name": "Illinois Tool Works",
+    "base": 131.13,
+    "vol": "low"
+  },
+  {
+    "symbol": "SLB",
+    "name": "Schlumberger",
+    "base": 440.83,
+    "vol": "low"
+  },
+  {
+    "symbol": "APD",
+    "name": "Air Products",
+    "base": 56.54,
+    "vol": "medium"
+  },
+  {
+    "symbol": "ETN",
+    "name": "Eaton Corporation",
+    "base": 410.77,
+    "vol": "high"
+  },
+  {
+    "symbol": "CSX",
+    "name": "CSX Corporation",
+    "base": 386.43,
+    "vol": "low"
+  },
+  {
+    "symbol": "FDX",
+    "name": "FedEx Corporation",
+    "base": 334.98,
+    "vol": "high"
+  },
+  {
+    "symbol": "GE",
+    "name": "General Electric",
+    "base": 95.09,
+    "vol": "high"
+  },
+  {
+    "symbol": "MMM",
+    "name": "3M Company",
+    "base": 438.13,
+    "vol": "medium"
+  },
+  {
+    "symbol": "AON",
+    "name": "Aon plc",
+    "base": 482.72,
+    "vol": "high"
+  },
+  {
+    "symbol": "FISV",
+    "name": "Fiserv Inc.",
+    "base": 381.3,
+    "vol": "high"
+  },
+  {
+    "symbol": "CMCSA",
+    "name": "Comcast Corporation",
+    "base": 112.56,
+    "vol": "medium"
+  },
+  {
+    "symbol": "HUM",
+    "name": "Humana Inc.",
+    "base": 208.51,
+    "vol": "high"
+  },
+  {
+    "symbol": "TGT",
+    "name": "Target Corporation",
+    "base": 330.19,
+    "vol": "medium"
+  },
+  {
+    "symbol": "NSC",
+    "name": "Norfolk Southern",
+    "base": 451.31,
+    "vol": "medium"
+  },
+  {
+    "symbol": "SCHW",
+    "name": "Charles Schwab",
+    "base": 73.69,
+    "vol": "low"
+  },
+  {
+    "symbol": "FIS",
+    "name": "Fidelity National",
+    "base": 46.05,
+    "vol": "low"
+  },
+  {
+    "symbol": "AEP",
+    "name": "American Electric Power",
+    "base": 300.33,
+    "vol": "low"
+  },
+  {
+    "symbol": "GM",
+    "name": "General Motors",
+    "base": 300.39,
+    "vol": "low"
+  },
+  {
+    "symbol": "EMR",
+    "name": "Emerson Electric",
+    "base": 49.43,
+    "vol": "high"
+  },
+  {
+    "symbol": "EW",
+    "name": "Edwards Lifesciences",
+    "base": 43.55,
+    "vol": "low"
+  }
+]
