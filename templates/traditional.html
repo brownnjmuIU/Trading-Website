@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeStation Pro — Simulated brokerage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="{{ url_for('static', filename='traditional_style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <header class="ts-header">
+        <div class="ts-header-inner">
+            <div class="ts-brand">
+                <span class="ts-logo"><i class="fa-solid fa-building-columns" aria-hidden="true"></i></span>
+                <div>
+                    <span class="ts-title">TradeStation Pro</span>
+                    <span class="ts-sub">Simulated · Paper trading</span>
+                </div>
+            </div>
+            <nav class="ts-nav">
+                <button type="button" class="theme-toggle-ts" id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode" aria-label="Toggle theme">
+                    <i class="fa-solid fa-sun" id="themeIconSun" aria-hidden="true"></i>
+                    <i class="fa-solid fa-moon hidden" id="themeIconMoon" aria-hidden="true"></i>
+                </button>
+                <span class="ts-account"><i class="fa-regular fa-user" aria-hidden="true"></i> Session ····{{ session_suffix }}</span>
+                <span class="ts-divider">|</span>
+                <a href="#" class="ts-link">Settings</a>
+                <a href="#" class="ts-link">Help</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="indices-strip">
+        <div class="indices-inner">
+            {% for idx in market_indices %}
+            <div class="idx-item">
+                <span class="idx-name">{{ idx.name }}</span>
+                <span class="idx-val">{{ idx.value }}</span>
+                <span class="idx-chg {% if idx.up %}up{% else %}down{% endif %}">
+                    <i class="fa-solid {% if idx.up %}fa-caret-up{% else %}fa-caret-down{% endif %}" aria-hidden="true"></i>
+                    {{ idx.chg_pct }}%
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <main class="ts-main">
+        <section class="summary-card">
+            <div class="summary-head">
+                <h2 class="summary-title">Account overview</h2>
+                <div class="summary-meta">
+                    <span class="meta-pill"><i class="fa-solid fa-list-check" aria-hidden="true"></i> {{ account_summary.trade_count }} order{{ 's' if account_summary.trade_count != 1 else '' }}</span>
+                </div>
+            </div>
+            <div class="summary-grid">
+                <div class="sum-item highlight">
+                    <span class="sum-label">Net account value</span>
+                    <span class="sum-value">${{ "{:,.2f}".format(account_summary.total_value) }}</span>
+                </div>
+                <div class="sum-item">
+                    <span class="sum-label">Cash</span>
+                    <span class="sum-value">${{ "{:,.2f}".format(account_summary.cash_balance) }}</span>
+                </div>
+                <div class="sum-item">
+                    <span class="sum-label">Buying power</span>
+                    <span class="sum-value">${{ "{:,.2f}".format(account_summary.buying_power) }}</span>
+                </div>
+                <div class="sum-item">
+                    <span class="sum-label">Day P/L ($)</span>
+                    <span class="sum-value {% if account_summary.today_change >= 0 %}pos{% else %}neg{% endif %}">
+                        {% if account_summary.today_change >= 0 %}+{% endif %}${{ "{:,.2f}".format(account_summary.today_change) }}
+                    </span>
+                </div>
+                <div class="sum-item">
+                    <span class="sum-label">Day P/L (%)</span>
+                    <span class="sum-value {% if account_summary.today_change_percent >= 0 %}pos{% else %}neg{% endif %}">
+                        {% if account_summary.today_change_percent >= 0 %}+{% endif %}{{ "%.2f"|format(account_summary.today_change_percent) }}%
+                    </span>
+                </div>
+            </div>
+            <div class="perf-bar" title="Performance vs $100K starting balance">
+                <div class="perf-fill {% if account_summary.today_change_percent >= 0 %}positive{% else %}negative{% endif %}" style="width: {{ account_summary.perf_bar_width }}%"></div>
+            </div>
+            <p class="perf-hint">Performance bar is a visual cue — not investment advice.</p>
+        </section>
+
+        <nav class="main-tabs-ts" role="tablist">
+            <button type="button" class="main-tab-ts active" role="tab" aria-selected="true" onclick="showMainTab('main-positions', this)">Positions</button>
+            <button type="button" class="main-tab-ts" role="tab" aria-selected="false" onclick="showMainTab('main-chart', this)">Chart</button>
+        </nav>
+
+        <div id="main-positions" class="main-tab-panel-ts active">
+        <div class="ts-grid">
+            <div class="ts-left">
+                <div class="card">
+                    <div class="tabs">
+                        <button type="button" class="tab active" onclick="showTab('positions', this)">Holdings</button>
+                        <button type="button" class="tab" onclick="showTab('orders', this)">Orders</button>
+                        <button type="button" class="tab" onclick="showTab('history', this)">History</button>
+                    </div>
+
+                    <div id="positions" class="tab-pane active">
+                        {% if positions %}
+                        <div class="table-scroll">
+                            <table class="ts-table">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th class="text-right">Qty</th>
+                                        <th class="text-right">Avg</th>
+                                        <th class="text-right">Last</th>
+                                        <th class="text-right">Mkt value</th>
+                                        <th class="text-right">P/L</th>
+                                        <th class="text-right">P/L %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for pos in positions %}
+                                    <tr class="clickable pos-row"
+                                        data-symbol="{{ pos.symbol }}"
+                                        data-name="{{ pos.name }}"
+                                        data-price="{{ pos.current_price }}"
+                                        onclick="selectFromPosition(this)">
+                                        <td class="sym">{{ pos.symbol }}</td>
+                                        <td class="text-right">{{ pos.shares }}</td>
+                                        <td class="text-right">${{ "%.2f"|format(pos.avg_cost) }}</td>
+                                        <td class="text-right">${{ "%.2f"|format(pos.current_price) }}</td>
+                                        <td class="text-right fw">${{ "{:,.2f}".format(pos.market_value) }}</td>
+                                        <td class="text-right fw {% if pos.gain_loss >= 0 %}pos{% else %}neg{% endif %}">{% if pos.gain_loss >= 0 %}+{% endif %}${{ "{:,.2f}".format(pos.gain_loss) }}</td>
+                                        <td class="text-right fw {% if pos.gain_loss_percent >= 0 %}pos{% else %}neg{% endif %}">{% if pos.gain_loss_percent >= 0 %}+{% endif %}{{ "%.2f"|format(pos.gain_loss_percent) }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="empty">No positions — add a trade from the order ticket.</div>
+                        {% endif %}
+                    </div>
+
+                    <div id="orders" class="tab-pane">
+                        <div class="empty"><i class="fa-regular fa-clipboard" aria-hidden="true"></i><p>No working orders (simulation uses market fills only).</p></div>
+                    </div>
+
+                    <div id="history" class="tab-pane">
+                        {% if history %}
+                        <div class="table-scroll">
+                            <table class="ts-table">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Side</th>
+                                        <th class="text-right">Qty</th>
+                                        <th class="text-right">Price</th>
+                                        <th class="text-right">Total</th>
+                                        <th class="text-right">Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for trade in history %}
+                                    <tr>
+                                        <td class="sym">{{ trade.symbol }}</td>
+                                        <td class="{% if trade.side == 'BUY' %}pos{% else %}neg{% endif %}">{{ trade.side }}</td>
+                                        <td class="text-right">{{ trade.shares }}</td>
+                                        <td class="text-right">${{ "%.2f"|format(trade.price) }}</td>
+                                        <td class="text-right">${{ "{:,.2f}".format(trade.total) }}</td>
+                                        <td class="text-right small muted">{{ trade.timestamp }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="empty">No executions yet.</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Market data</h3>
+                    <div class="table-scroll tall">
+                        <table class="ts-table">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Name</th>
+                                    <th class="text-right">Bid</th>
+                                    <th class="text-right">Ask</th>
+                                    <th class="text-right">Last</th>
+                                    <th class="text-right">Change</th>
+                                    <th class="text-right">Vol</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stock in market_data %}
+                                <tr class="clickable" data-symbol="{{ stock.symbol }}" data-name="{{ stock.name }}" data-price="{{ stock.last }}" onclick="selectFromRow(this)">
+                                    <td class="sym">{{ stock.symbol }}</td>
+                                    <td class="co">{{ stock.name }}</td>
+                                    <td class="text-right">{{ "%.2f"|format(stock.bid) }}</td>
+                                    <td class="text-right">{{ "%.2f"|format(stock.ask) }}</td>
+                                    <td class="text-right fw">{{ "%.2f"|format(stock.last) }}</td>
+                                    <td class="text-right fw {% if stock.change >= 0 %}pos{% else %}neg{% endif %}">{% if stock.change >= 0 %}+{% endif %}{{ "%.2f"|format(stock.change) }} ({% if stock.change_percent >= 0 %}+{% endif %}{{ "%.2f"|format(stock.change_percent) }}%)</td>
+                                    <td class="text-right muted">{{ stock.volume }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="ts-right">
+                <div class="card order-card">
+                    <h3 class="card-title"><i class="fa-solid fa-file-invoice-dollar" aria-hidden="true"></i> Order ticket</h3>
+                    <div class="form-group">
+                        <label class="form-label">Side</label>
+                        <div class="action-buttons">
+                            <button type="button" id="buyBtn" class="action-btn active" onclick="setAction('buy')">Buy</button>
+                            <button type="button" id="sellBtn" class="action-btn" onclick="setAction('sell')">Sell</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Instrument</label>
+                        <div id="selectedStockDisplay" class="selected-stock-display">Select a symbol from Market data or Positions</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="quantityInput">Quantity</label>
+                        <input type="number" id="quantityInput" class="form-input" placeholder="0" min="1" oninput="updateEstimate()">
+                    </div>
+                    <div class="order-summary">
+                        <div class="summary-row">
+                            <span>Est. cost</span>
+                            <span id="estimatedCost" class="fw">$0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Commission</span>
+                            <span class="fw">$0.00</span>
+                        </div>
+                    </div>
+                    <button type="button" class="submit-button" onclick="submitOrder()">Submit order</button>
+                    <button type="button" class="submit-button" onclick="resetPortfolio()" style="margin-top:8px;background:#475569;"> Reset portfolio(Demo)</button>
+                    <p class="disclaimer">Simulated execution. Market data and indices are illustrative. For research participation only.</p>
+                </div>
+            </aside>
+        </div>
+        </div>
+
+        <div id="main-chart" class="main-tab-panel-ts">
+            <div class="card chart-card-ts">
+                <h3 class="card-title"><i class="fa-solid fa-chart-area" aria-hidden="true"></i> Price chart</h3>
+                <p class="card-lead">Simulated candlesticks, moving averages, and volume (illustrative only).</p>
+                <div class="chart-controls-ts">
+                    <label class="form-label" for="chartSymbol">Symbol</label>
+                    <select id="chartSymbol" class="form-input chart-select-ts" onchange="loadChart()">
+                        {% for stock in market_data %}
+                        <option value="{{ stock.symbol }}">{{ stock.symbol }} — {{ stock.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" class="submit-button chart-btn-ts" onclick="loadChart()">Refresh</button>
+                </div>
+                <div id="chartOhlcv" class="chart-ohlcv-ts" aria-live="polite"></div>
+                <div id="echartMain" class="echart-main-ts" role="img" aria-label="Candlestick and volume chart"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const THEME_KEY = 'tradestation-theme';
+        let selectedStock = null;
+        let currentAction = 'buy';
+        let currentPrice = 0;
+        let echartInstance = null;
+
+        function initTheme() {
+            const saved = localStorage.getItem(THEME_KEY);
+            const theme = saved || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            syncThemeIcons(theme);
+        }
+
+        function syncThemeIcons(theme) {
+            const light = theme === 'light';
+            document.getElementById('themeIconSun').classList.toggle('hidden', !light);
+            document.getElementById('themeIconMoon').classList.toggle('hidden', light);
+        }
+
+        function toggleTheme() {
+            const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem(THEME_KEY, next);
+            syncThemeIcons(next);
+            if (echartInstance) loadChart();
+        }
+
+        initTheme();
+
+        function showMainTab(id, el) {
+            document.querySelectorAll('.main-tab-panel-ts').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.main-tab-ts').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+            document.getElementById(id).classList.add('active');
+            if (el) { el.classList.add('active'); el.setAttribute('aria-selected', 'true'); }
+            if (id === 'main-chart') setTimeout(() => loadChart(), 50);
+        }
+
+        function showTab(tabName, el) {
+            document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.card .tabs .tab').forEach(b => { b.classList.remove('active'); });
+            document.getElementById(tabName).classList.add('active');
+            if (el) el.classList.add('active');
+        }
+
+        function selectFromRow(row) {
+            selectedStock = row.dataset.symbol;
+            currentPrice = parseFloat(row.dataset.price, 10);
+            const name = row.dataset.name || selectedStock;
+            document.getElementById('selectedStockDisplay').innerHTML = '<strong>' + selectedStock + '</strong> · ' + name + '<br>at $' + currentPrice.toFixed(2);
+            document.getElementById('selectedStockDisplay').classList.add('has-selection');
+            updateEstimate();
+        }
+
+        function selectFromPosition(row) {
+            setAction('sell');
+            selectedStock = row.dataset.symbol;
+            currentPrice = parseFloat(row.dataset.price, 10);
+            const name = row.dataset.name || selectedStock;
+            document.getElementById('selectedStockDisplay').innerHTML = '<strong>' + selectedStock + '</strong> · ' + name + '<br>at $' + currentPrice.toFixed(2);
+            document.getElementById('selectedStockDisplay').classList.add('has-selection');
+            document.getElementById('quantityInput').focus();
+            updateEstimate();
+        }
+
+        function setAction(action) {
+            currentAction = action;
+            document.getElementById('buyBtn').classList.toggle('active', action === 'buy');
+            document.getElementById('sellBtn').classList.toggle('active', action === 'sell');
+        }
+
+        function updateEstimate() {
+            const q = parseInt(document.getElementById('quantityInput').value, 10) || 0;
+            const total = q * currentPrice;
+            document.getElementById('estimatedCost').textContent = '$' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function echartTheme() {
+            const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+            return {
+                fg: dark ? '#e2e8f0' : '#0f172a',
+                mut: dark ? '#94a3b8' : '#64748b',
+                grid: dark ? 'rgba(148,163,184,0.12)' : 'rgba(15,23,42,0.08)',
+                split: dark ? '#334155' : '#e2e8f0'
+            };
+        }
+
+        function renderOhlcv(h, company) {
+            const el = document.getElementById('chartOhlcv');
+            if (!h) { el.innerHTML = ''; return; }
+            el.innerHTML =
+                '<span class="chart-co-name-ts">' + (company || '') + '</span>' +
+                '<span class="chart-ohlcv-item-ts"><span class="k">O</span> ' + h.o.toFixed(2) + '</span>' +
+                '<span class="chart-ohlcv-item-ts"><span class="k">H</span> ' + h.h.toFixed(2) + '</span>' +
+                '<span class="chart-ohlcv-item-ts"><span class="k">L</span> ' + h.l.toFixed(2) + '</span>' +
+                '<span class="chart-ohlcv-item-ts"><span class="k">C</span> ' + h.c.toFixed(2) + '</span>' +
+                '<span class="chart-ohlcv-item-ts"><span class="k">V</span> ' + h.v + '</span>';
+        }
+
+        function lineSeries(name, dat, color) {
+            return {
+                name, type: 'line', xAxisIndex: 0, yAxisIndex: 0,
+                data: dat, showSymbol: false, smooth: true, lineStyle: { width: 1.2, color },
+                emphasis: { focus: 'series' }
+            };
+        }
+
+        async function resetPortfolio() {
+            const ok = confirm('Reset portfolio, cash, and trade history for this session?');
+            if (!ok) return;
+            try {
+                const response = await fetch('/reset-portfolio', { method: 'POST' });
+                const data = await response.json();
+                alert(data.message || 'Reset complete.');
+                if (data.success) window.location.reload();
+                } catch (error) {
+                        console.error(error);
+                        alert('Reset failed: ' + error.message);
+                                 }
+        }
+
+        async function loadChart() {
+            const sel = document.getElementById('chartSymbol');
+            if (!sel || !sel.value) return;
+            const symbol = sel.value;
+            try {
+                const res = await fetch('/api/chart-data?symbol=' + encodeURIComponent(symbol));
+                if (!res.ok) return;
+                const d = await res.json();
+                renderOhlcv(d.header, d.company_name);
+
+                const th = echartTheme();
+                const dom = document.getElementById('echartMain');
+                if (echartInstance) {
+                    echartInstance.dispose();
+                    echartInstance = null;
+                }
+                echartInstance = echarts.init(dom);
+
+                const volColors = d.candlestick.map(function (c) {
+                    return c[1] >= c[0] ? 'rgba(5,150,105,0.5)' : 'rgba(220,38,38,0.45)';
+                });
+
+                echartInstance.setOption({
+                    backgroundColor: 'transparent',
+                    textStyle: { color: th.fg },
+                    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' }, confine: true },
+                    axisPointer: { link: [{ xAxisIndex: 'all' }] },
+                    legend: {
+                        left: 6,
+                        top: 'middle',
+                        orient: 'vertical',
+                        itemWidth: 12,
+                        itemHeight: 8,
+                        textStyle: { color: th.mut, fontSize: 10 },
+                        data: ['SMA(21)', 'SMA(50)', 'SMA(100)', 'SMA(150)', 'SMA(200)', 'EMA(10)', 'WMA(50)']
+                    },
+                    grid: [
+                        { left: '20%', right: '4%', top: '10%', height: '54%' },
+                        { left: '20%', right: '4%', top: '72%', height: '18%' }
+                    ],
+                    xAxis: [
+                        {
+                            type: 'category', data: d.labels, gridIndex: 0,
+                            axisLabel: { color: th.mut, fontSize: 9, rotate: 35 },
+                            axisLine: { lineStyle: { color: th.split } },
+                            splitLine: { show: false }
+                        },
+                        {
+                            type: 'category', data: d.labels, gridIndex: 1,
+                            axisLabel: { show: false },
+                            axisLine: { lineStyle: { color: th.split } }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            scale: true, gridIndex: 0,
+                            axisLabel: { color: th.mut, fontSize: 10 },
+                            splitLine: { lineStyle: { color: th.grid } }
+                        },
+                        {
+                            scale: true, gridIndex: 1,
+                            axisLabel: { color: th.mut, fontSize: 9 },
+                            splitLine: { lineStyle: { color: th.grid } }
+                        }
+                    ],
+                    series: [
+                        {
+                            name: 'Price',
+                            type: 'candlestick',
+                            xAxisIndex: 0,
+                            yAxisIndex: 0,
+                            data: d.candlestick,
+                            itemStyle: {
+                                color: '#059669',
+                                color0: '#dc2626',
+                                borderColor: '#059669',
+                                borderColor0: '#dc2626'
+                            }
+                        },
+                        lineSeries('SMA(21)', d.sma21, '#ef5350'),
+                        lineSeries('SMA(50)', d.sma50, '#ab47bc'),
+                        lineSeries('SMA(100)', d.sma100, '#42a5f5'),
+                        lineSeries('SMA(150)', d.sma150, '#26c6da'),
+                        lineSeries('SMA(200)', d.sma200, '#66bb6a'),
+                        lineSeries('EMA(10)', d.ema10, '#ffca28'),
+                        lineSeries('WMA(50)', d.wma50, '#ff9800'),
+                        {
+                            name: 'Volume',
+                            type: 'bar',
+                            xAxisIndex: 1,
+                            yAxisIndex: 1,
+                            data: d.volume.map(function (v, i) {
+                                return { value: v, itemStyle: { color: volColors[i] } };
+                            })
+                        }
+                    ]
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        window.addEventListener('resize', function () {
+            if (echartInstance) echartInstance.resize();
+        });
+
+        async function submitOrder() {
+            if (!selectedStock) {
+                alert('Select a symbol from Market data or Positions.');
+                return;
+            }
+            const quantity = parseInt(document.getElementById('quantityInput').value, 10);
+            if (!quantity || quantity <= 0) {
+                alert('Enter a valid quantity.');
+                return;
+            }
+            try {
+                const response = await fetch('/trade', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol: selectedStock, shares: quantity, action: currentAction })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
